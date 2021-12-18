@@ -37,7 +37,9 @@ export function App() {
       setNoteList(getNoteList());
       setIsRender(true)
     }
-  }, [noteList.length]);
+  }, [noteList, isRender]);
+
+  const getNoteById = (id:number):NoteListItemProp => noteList.filter(item => item.id === id)[0]
 
   return (
     <NoteContext.Provider value={{
@@ -57,15 +59,16 @@ export function App() {
 
             {(viewMode === ViewMode.Create || viewMode === ViewMode.Edit) &&
               <NoteForm
-                title={showItem != null ? noteList[showItem].title : ''}
-                desc={showItem != null ? noteList[showItem].desc : ''}
+                title={showItem !== null ? getNoteById(showItem).title : ''}
+                desc={showItem !== null ? getNoteById(showItem).desc : ''}
               />
             }
 
             {(viewMode === ViewMode.Show && showItem != null) &&
               <NoteShow
-                title={noteList[showItem].title}
-                desc={noteList[showItem].desc}
+                id={getNoteById(showItem).id}
+                title={getNoteById(showItem).title}
+                desc={getNoteById(showItem).desc}
               />
             }
           </Col>

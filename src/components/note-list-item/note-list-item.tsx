@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, Card } from 'react-bootstrap'
+import sanitizeHtml from 'sanitize-html'
 import { NoteListItemProp } from '../../types'
 
 interface Prop extends NoteListItemProp{
@@ -23,6 +24,7 @@ export function NoteListItem({
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
     overflow: 'hidden',
+    marginBottom: 24
   }
 
   return (
@@ -30,7 +32,13 @@ export function NoteListItem({
       <Card.Body>
         <h5 className={'mb-2'} style={NowrapText}>{title}</h5>
 
-        <p style={NowrapText}>{desc}</p>
+        <div
+          style={NowrapText}
+          dangerouslySetInnerHTML={{
+          __html: sanitizeHtml(desc, {
+            allowedTags: [],
+          })
+        }} />
 
         <div className={'d-flex justify-content-between'}>
           <Button onClick={() => onShow(id)}>Open</Button>

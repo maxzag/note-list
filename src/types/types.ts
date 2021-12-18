@@ -1,4 +1,5 @@
 export interface NoteListItemProp {
+  id: number,
   title: string;
   desc: string;
 }

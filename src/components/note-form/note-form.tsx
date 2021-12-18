@@ -1,12 +1,19 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Button, Form } from 'react-bootstrap'
-import { NoteListItemProp, ViewMode } from '../../types'
+import ContentEditable from 'react-contenteditable'
+import { ViewMode } from '../../types'
 import { NoteContext } from '../app'
+import styles from './note-form.module.css'
+
+export type NoteFormProp = {
+  title: string;
+  desc: string;
+}
 
 export function NoteForm({
   title,
   desc
-}:NoteListItemProp) {
+}:NoteFormProp) {
   const maxTitleLength = 20;
   const {
     showItem,
@@ -20,29 +27,35 @@ export function NoteForm({
   const validateTitleLength = ():boolean => formData.title.length <= maxTitleLength
 
   useEffect(() => {
-    setFormData({title, desc})
-  }, [showItem])
+    setFormData({
+      title: title,
+      desc: desc
+    })
+  }, [title, desc])
 
   function onCreate(){
     if(formData.title.length
       && validateTitleLength()
       && formData.desc.length
     ) {
-      setNoteList([...noteList, formData])
+      setNoteList([...noteList, {id: new Date().getTime(), ...formData}])
       setFormData({title: '', desc: ''})
     }
   }
 
   function onEdit(){
-    if(formData.title.length
+    if (formData.title.length
       && validateTitleLength()
       && formData.desc.length
-      && showItem
+      && showItem !== null
     ) {
       setNoteList(noteList.map((
-        item,
-        index
-      ) => (index === showItem) ? formData : item))
+        item
+      ) => (item.id === showItem) ? {
+        ...item,
+        title: formData.title,
+        desc: formData.desc
+      } : item));
       setViewMode(ViewMode.Show);
     }
   }
@@ -76,7 +89,10 @@ export function NoteForm({
             type="text"
             placeholder="Enter note title"
             value={formData.title}
-            onChange={(e) => setFormData({...formData, title: e.target.value})}
+            onChange={(e) => setFormData({
+              ...formData,
+              title: e.target.value
+            })}
           />
           <Form.Text className={'text-danger'}>
             {!validateTitleLength() && `Field length: ${maxTitleLength - formData.title.length}`}
@@ -85,12 +101,16 @@ export function NoteForm({
 
         <Form.Group className="mb-3">
           <Form.Label>Content</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={3}
-            placeholder={'Enter note content'}
-            value={formData.desc}
-            onChange={(e) => setFormData({...formData, desc: e.target.value})}
+          <ContentEditable
+            className={`form-control ${styles.content}`}
+            html={formData.desc}
+            onChange={(e) => setFormData({
+              ...formData,
+              desc: e.target.value
+            })}
+            style={{
+              minHeight: '150px'
+            }}
           />
         </Form.Group>
 
