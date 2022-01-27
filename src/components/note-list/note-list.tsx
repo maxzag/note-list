@@ -40,8 +40,10 @@ export function NoteList() {
   function onFilter(query:string) {
     setFilteredList(
       noteList.filter((item) =>
-        item.title.toLowerCase().includes(query)
-        || item.desc.toLowerCase().includes(query)
+        {
+          return item.title.toLowerCase().includes(query)
+            || item.desc.toLowerCase().includes(query)
+        }
       )
     );
   }
