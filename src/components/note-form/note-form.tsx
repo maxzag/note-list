@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Button, Form } from 'react-bootstrap'
 import ContentEditable from 'react-contenteditable'
+import { removeHTMLTags } from '../../helpers'
 import { ViewMode } from '../../types'
 import { NoteContext } from '../app'
 import styles from './note-form.module.css'
@@ -15,6 +16,7 @@ export function NoteForm({
   desc
 }:NoteFormProp) {
   const maxTitleLength = 20;
+  const maxDescLength = 1000;
   const {
     showItem,
     setShowItem,
@@ -24,7 +26,9 @@ export function NoteForm({
     setNoteList
   } = useContext(NoteContext);
   const [formData, setFormData] = useState({title, desc});
-  const validateTitleLength = ():boolean => formData.title.length <= maxTitleLength
+  const [isFormDataValid, setFormDataValid] = useState(false);
+  const isTitleLengthValid = ():boolean => formData.title.length <= maxTitleLength
+  const isDescLengthValid = ():boolean => formData.desc.length <= maxDescLength
 
   useEffect(() => {
     setFormData({
@@ -33,22 +37,27 @@ export function NoteForm({
     })
   }, [title, desc])
 
-  function onCreate(){
-    if(formData.title.length
-      && validateTitleLength()
-      && formData.desc.length
+  useEffect(() => {
+    if(removeHTMLTags(formData.title).length != 0
+      && isTitleLengthValid()
+      && removeHTMLTags(formData.desc).length != 0
+      && isDescLengthValid()
     ) {
-      setNoteList([...noteList, {id: new Date().getTime(), ...formData}])
-      setFormData({title: '', desc: ''})
+      setFormDataValid(true)
+    }else{
+      setFormDataValid(false)
     }
+  }, [formData])
+
+
+
+  function onCreate(){
+    setNoteList([...noteList, {id: new Date().getTime(), ...formData}])
+    setFormData({title: '', desc: ''})
   }
 
   function onEdit(){
-    if (formData.title.length
-      && validateTitleLength()
-      && formData.desc.length
-      && showItem !== null
-    ) {
+    if (showItem !== null) {
       setNoteList(noteList.map((
         item
       ) => (item.id === showItem) ? {
@@ -84,7 +93,7 @@ export function NoteForm({
 
       <Form>
         <Form.Group className="mb-3">
-          <Form.Label>Title</Form.Label>
+          <Form.Label>Title <span className="text-danger">*</span></Form.Label>
           <Form.Control
             type="text"
             placeholder="Enter note title"
@@ -95,12 +104,12 @@ export function NoteForm({
             })}
           />
           <Form.Text className={'text-danger'}>
-            {!validateTitleLength() && `Field length: ${maxTitleLength - formData.title.length}`}
+            {!isTitleLengthValid() && `Field length: ${maxTitleLength - formData.title.length}`}
           </Form.Text>
         </Form.Group>
 
         <Form.Group className="mb-3">
-          <Form.Label>Content</Form.Label>
+          <Form.Label>Content <span className="text-danger">*</span></Form.Label>
           <ContentEditable
             className={`form-control ${styles.content}`}
             html={formData.desc}
@@ -112,11 +121,14 @@ export function NoteForm({
               minHeight: '150px'
             }}
           />
+          <Form.Text className={'text-danger'}>
+            {!isDescLengthValid() && `Field length: ${maxDescLength - formData.desc.length}`}
+          </Form.Text>
         </Form.Group>
 
-        {(viewMode === ViewMode.Create && <Button onClick={() => onCreate()}>Create</Button>)}
+        {(viewMode === ViewMode.Create && <Button disabled={!isFormDataValid} onClick={() => onCreate()}>Create</Button>)}
 
-        {(viewMode === ViewMode.Edit && <Button onClick={() => onEdit()}>Save</Button>)}
+        {(viewMode === ViewMode.Edit && <Button disabled={!isFormDataValid} onClick={() => onEdit()}>Save</Button>)}
 
         <Button
           variant={'outline-primary'}
