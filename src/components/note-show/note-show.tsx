@@ -6,7 +6,7 @@ import styles from './note-show.module.css'
 
 export function NoteShow({
   title,
-  desc
+  description
 }:NoteListItemProp) {
   useEffect(() => {
     const links:NodeListOf<HTMLAnchorElement> = (document.querySelectorAll('a'));
@@ -32,13 +32,13 @@ export function NoteShow({
         })
       })
     }
-  }, [title, desc])
+  }, [title, description])
   return (
     <>
       <h2 className={'mb-4'}>{title}</h2>
 
       <div className={styles.content} dangerouslySetInnerHTML={{
-        __html: sanitizeHtml(desc, sanitizeConfig)
+        __html: sanitizeHtml(description, sanitizeConfig)
       }} />
     </>
   );

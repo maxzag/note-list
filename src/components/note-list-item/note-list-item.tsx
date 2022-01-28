@@ -14,7 +14,7 @@ interface Prop extends NoteListItemProp{
 export function NoteListItem({
   id,
   title,
-  desc,
+  description,
   onDelete,
   onShow,
   onEdit,
@@ -35,7 +35,7 @@ export function NoteListItem({
         <div
           style={NowrapText}
           dangerouslySetInnerHTML={{
-          __html: sanitizeHtml(desc, {
+          __html: sanitizeHtml(description, {
             allowedTags: [],
           })
         }} />

@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useMemo, useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap'
 import { getNoteList, storeNoteList } from '../../services'
 import { NoteListItemProp, ViewMode } from '../../types'
@@ -39,7 +39,7 @@ export function App() {
     }
   }, [noteList, isRender]);
 
-  const getNoteById = (id:number):NoteListItemProp => noteList.filter(item => item.id === id)[0]
+  const currentNote = useMemo(() => noteList.filter(item => item.id === showItem)[0], [showItem])
 
   return (
     <NoteContext.Provider value={{
@@ -59,16 +59,16 @@ export function App() {
 
             {(viewMode === ViewMode.Create || viewMode === ViewMode.Edit) &&
               <NoteForm
-                title={showItem !== null ? getNoteById(showItem).title : ''}
-                desc={showItem !== null ? getNoteById(showItem).desc : ''}
+                title={showItem !== null ? currentNote.title : ''}
+                description={showItem !== null ? currentNote.description : ''}
               />
             }
 
             {(viewMode === ViewMode.Show && showItem != null) &&
               <NoteShow
-                id={getNoteById(showItem).id}
-                title={getNoteById(showItem).title}
-                desc={getNoteById(showItem).desc}
+                id={currentNote.id}
+                title={currentNote.title}
+                description={currentNote.description}
               />
             }
           </Col>

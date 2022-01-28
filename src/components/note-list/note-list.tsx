@@ -42,7 +42,7 @@ export function NoteList() {
       noteList.filter((item) =>
         {
           return item.title.toLowerCase().includes(query)
-            || item.desc.toLowerCase().includes(query)
+            || item.description.toLowerCase().includes(query)
         }
       )
     );
@@ -75,7 +75,7 @@ export function NoteList() {
           key={noteItem.id}
           id={noteItem.id}
           title={noteItem.title}
-          desc={noteItem.desc}
+          description={noteItem.description}
           onDelete={onDelete}
           onShow={onShow}
           onEdit={onEdit}
