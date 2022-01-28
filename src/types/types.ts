@@ -1,7 +1,7 @@
 export interface NoteListItemProp {
   id: number,
   title: string;
-  desc: string;
+  description: string;
 }
 
 export enum ViewMode {

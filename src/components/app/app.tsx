@@ -60,7 +60,7 @@ export function App() {
             {(viewMode === ViewMode.Create || viewMode === ViewMode.Edit) &&
               <NoteForm
                 title={showItem !== null ? getNoteById(showItem).title : ''}
-                desc={showItem !== null ? getNoteById(showItem).desc : ''}
+                description={showItem !== null ? getNoteById(showItem).description : ''}
               />
             }
 
@@ -68,7 +68,7 @@ export function App() {
               <NoteShow
                 id={getNoteById(showItem).id}
                 title={getNoteById(showItem).title}
-                desc={getNoteById(showItem).desc}
+                description={getNoteById(showItem).description}
               />
             }
           </Col>
