@@ -1,7 +1,5 @@
-import { FC, useEffect, useReducer } from 'react'
 import { Col, Container, Row } from 'react-bootstrap'
-import { NoteListContext } from '../../contexts'
-import { initialState, noteListReducer } from '../../reducers'
+import { NoteListProvider } from '../../contexts'
 import { Note } from '../../types'
 import { NoteList } from '../note-list'
 import { NoteSingle } from '../note-single'
@@ -21,14 +19,6 @@ export const NotesView = () => {
     </Container>
   );
 };
-
-export const NoteListProvider: FC = ({ children }) => {
-  const [state, dispatch] = useReducer(noteListReducer, initialState, (state) => ({ ...state, notes: getNoteList() }))
-
-  useEffect(() => storeNoteList([...state.notes]), [state.notes])
-
-  return <NoteListContext.Provider value={[state, dispatch]}>{children}</NoteListContext.Provider>
-}
 
 export const Notes = () => {
   return (
