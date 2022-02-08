@@ -1,25 +1,23 @@
 import React from 'react';
 import { Button, Card } from 'react-bootstrap'
 import sanitizeHtml from 'sanitize-html'
-import { NoteListItemProp } from '../../types'
+import { useListState } from '../../contexts'
+import { Note, ViewMode } from '../../types'
 
-interface Prop extends NoteListItemProp{
-  id: number,
-  onDelete: (id:number) => void
-  onShow: (id:number) => void
-  onEdit: (id:number) => void
-  isOpen: boolean
+export type DefaultListItemProps = {
+  readonly note: Note
+  readonly isOpen: boolean
+  readonly onDelete: (id:number) => void
+  readonly onChangeViewMode: (id:number, viewMode: ViewMode) => void
 }
 
-export function NoteListItem({
-  id,
-  title,
-  description,
-  onDelete,
-  onShow,
-  onEdit,
-  isOpen = false
-}:Prop) {
+export const NoteListItemView: React.FC<DefaultListItemProps> = ({
+  note,
+  isOpen,
+  onChangeViewMode,
+  onDelete
+
+}) => {
   const NowrapText:React.CSSProperties = {
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
@@ -30,31 +28,31 @@ export function NoteListItem({
   return (
     <Card className={`mb-3 ${isOpen && 'border-dark'}`}>
       <Card.Body>
-        <h5 className={'mb-2'} style={NowrapText}>{title}</h5>
+        <h5 className={'mb-2'} style={NowrapText}>{note.title}</h5>
 
         <div
           style={NowrapText}
           dangerouslySetInnerHTML={{
-          __html: sanitizeHtml(description, {
-            allowedTags: [],
-          })
-        }} />
+            __html: sanitizeHtml(note.description, {
+              allowedTags: [],
+            })
+          }} />
 
         <div className={'d-flex justify-content-between'}>
-          <Button onClick={() => onShow(id)}>Open</Button>
+          <Button onClick={() => onChangeViewMode(ViewMode.Show, note.id)}>Open</Button>
 
           <div>
             <Button
               variant={'outline-primary'}
               className={'mx-3'}
-              onClick={() => onEdit(id)}
+              onClick={() => onChangeViewMode(ViewMode.Edit, note.id)}
             >
               Edit
             </Button>
 
             <Button
               variant={'danger'}
-              onClick={(e) => onDelete(id)}
+              onClick={() => onDelete(note.id)}
             >
               Delete
             </Button>
@@ -62,5 +60,17 @@ export function NoteListItem({
         </div>
       </Card.Body>
     </Card>
-  );
+  )
+}
+
+export const NoteListItem: React.FC<Pick<DefaultListItemProps, "note">> = ({ note }) => {
+  const [state, actions] = useListState()
+  const isOpen = state.showNoteId === note.id
+
+  return <NoteListItemView
+    note={note}
+    isOpen={isOpen}
+    onDelete={actions.removeNote}
+    onChangeViewMode={actions.changeViewMode}
+  />
 }

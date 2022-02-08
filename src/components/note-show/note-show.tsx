@@ -1,20 +1,37 @@
 import React, { useEffect } from 'react';
 import sanitizeHtml from 'sanitize-html';
 import { sanitizeConfig } from '../../helpers'
-import { NoteListItemProp } from '../../types'
+import { Note } from '../../types'
 import styles from './note-show.module.css'
 
-export function NoteShow({
-  title,
-  description
-}:NoteListItemProp) {
+export type NoteShowProp = {
+  readonly note: Note
+}
+
+export const NoteShowView: React.FC<NoteShowProp> = ({ note }) => {
+  return (
+    <>
+      <h2 className={'mb-4'}>{note.title}</h2>
+
+      <div
+        className={styles.content}
+        dangerouslySetInnerHTML={{
+        __html: sanitizeHtml(note.description, sanitizeConfig)
+        }}
+      />
+    </>
+  );
+}
+
+
+export const NoteShow = ({ note }: NoteShowProp) => {
   useEffect(() => {
     const links:NodeListOf<HTMLAnchorElement> = (document.querySelectorAll('a'));
+
     const listener = function (event:MouseEvent, link: HTMLAnchorElement) {
       event.preventDefault();
       const isSure = window.confirm('Are you sure you want to leave the page?');
       if(isSure){
-        console.log(link.href);
         window.location.href = link.href;
       }
     };
@@ -32,14 +49,7 @@ export function NoteShow({
         })
       })
     }
-  }, [title, description])
-  return (
-    <>
-      <h2 className={'mb-4'}>{title}</h2>
+  }, [note])
 
-      <div className={styles.content} dangerouslySetInnerHTML={{
-        __html: sanitizeHtml(description, sanitizeConfig)
-      }} />
-    </>
-  );
+  return <NoteShowView note={note} />
 }

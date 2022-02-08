@@ -1,86 +1,64 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Button, FormControl } from 'react-bootstrap'
-import { NoteListItemProp, ViewMode } from '../../types'
-import { NoteContext } from '../app'
+import { useListState } from '../../contexts'
+import { Note, ViewMode } from '../../types'
 import { NoteListItem } from '../note-list-item'
 
-export function NoteList() {
-  const {
-    viewMode,
-    setViewMode,
-    noteList,
-    setNoteList,
-    showItem,
-    setShowItem
-  } = useContext(NoteContext);
-  const [filteredList, setFilteredList] = useState([] as NoteListItemProp[]);
+export type NoteListProp = {
+  readonly notes: readonly Note[]
+  readonly onChangeViewMode: (viewMode: ViewMode) => void
+  readonly onFilter: (query: string) => void
+}
 
-  useEffect(() => {
-    setFilteredList(noteList)
-  }, [noteList])
-
-  function onShow(id:number | null) {
-    setShowItem(id);
-    setViewMode(ViewMode.Show);
-  }
-
-  function onEdit(id:number | null) {
-    setShowItem(id);
-    setViewMode(ViewMode.Edit);
-  }
-
-  function onDelete(id:number) {
-    if (viewMode === ViewMode.Show || viewMode === ViewMode.Edit) {
-      setViewMode(ViewMode.Empty);
-      setShowItem(null);
-    }
-    setNoteList(noteList.filter((item) => item.id !== id))
-  }
-
-  function onFilter(query:string) {
-    setFilteredList(
-      noteList.filter((item) =>
-        {
-          return item.title.toLowerCase().includes(query)
-            || item.description.toLowerCase().includes(query)
-        }
-      )
-    );
-  }
-
-  function setCreateMode(){
-    setShowItem(null);
-    setViewMode(ViewMode.Create);
-  }
-
+export const NoteListView: React.FC<NoteListProp> = React.memo(({notes, onChangeViewMode, onFilter}) => {
   return (
     <>
       <div className={'d-flex justify-content-between mb-3'}>
         <h3 className={'mb-0'}>Note list</h3>
 
-        <Button onClick={() => setCreateMode()}>Create note</Button>
+        <Button onClick={() => onChangeViewMode(ViewMode.Create)}>Create note</Button>
       </div>
 
       <div className={'mb-3'}>
         <FormControl
           placeholder={'Search'}
           type={'text'}
-          onChange={(e) => onFilter(e.target.value.toLowerCase())}
+          onChange={(e) => onFilter(e.target.value)}
         />
       </div>
 
-      {(filteredList.map((noteItem, index) => (
+      {(notes.map((note) => (
         <NoteListItem
-          isOpen={noteItem.id === showItem}
-          key={noteItem.id}
-          id={noteItem.id}
-          title={noteItem.title}
-          description={noteItem.description}
-          onDelete={onDelete}
-          onShow={onShow}
-          onEdit={onEdit}
+          key={note.id}
+          note={note}
         />
       ))).reverse()}
     </>
   );
+})
+
+export const NoteList: React.FC = () => {
+  const [state, actions] = useListState();
+  const [notes, setNotes] = useState(state.notes);
+
+  useEffect(() => {
+    setNotes(state.notes)
+  }, [state.notes])
+
+  const onFilter = useCallback((query:string) => {
+    setNotes(
+      notes.filter((item) =>
+        {
+          return item.title.toLowerCase().includes(query)
+            || item.description.toLowerCase().includes(query)
+        }
+      )
+    )
+  }, [])
+
+  return <NoteListView
+    onChangeViewMode={actions.changeViewMode}
+    notes={notes}
+    onFilter={onFilter}
+  />
 }

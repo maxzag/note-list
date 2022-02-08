@@ -1,30 +1,31 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Button, Form } from 'react-bootstrap'
 import ContentEditable from 'react-contenteditable'
 import { MAX_NOTE_DESCRIPTION_LENGTH, MAX_NOTE_TITLE_LENGTH } from '../../constants'
+import { useListState } from '../../contexts'
 import { isDescriptionValid, isTitleValid, removeHTMLTags } from '../../helpers'
-import { ViewMode } from '../../types'
-import { NoteContext } from '../app'
+import { Note, ViewMode } from '../../types'
 import styles from './note-form.module.css'
 
 export type NoteFormProp = {
-  title: string;
-  description: string;
+  readonly viewMode: ViewMode
+  readonly formTitle: string
+  readonly note: Note
+  readonly onCreate: (note: Note) => void
+  readonly onEdit: (note: Note) => void
+  readonly onCancel: () => void
 }
 
-export function NoteForm({
-  title,
-  description
-}:NoteFormProp) {
-  const {
-    showItem,
-    setShowItem,
-    viewMode,
-    setViewMode,
-    noteList,
-    setNoteList
-  } = useContext(NoteContext);
-  const [formData, setFormData] = useState({title, description});
+export const NoteFormView: React.FC<NoteFormProp> = ({
+  viewMode,
+  formTitle,
+  note,
+  onCreate,
+  onEdit,
+  onCancel
+}) => {
+  const [formData, setFormData] = useState(note);
+
   const isNoteTitleValid = useMemo(() => isTitleValid(formData.title), [formData.title]);
   const isNoteDescriptionValid = useMemo(() => isDescriptionValid(formData.description), [formData.description]);
   const noteTitleCharDifference = useMemo(() => MAX_NOTE_TITLE_LENGTH - formData.title.length, [formData.title]);
@@ -36,52 +37,9 @@ export function NoteForm({
       && isNoteDescriptionValid
   }, [formData])
 
-  useEffect(() => {
-    setFormData({
-      title,
-      description
-    })
-  }, [title, description])
-
-  function onCreate(){
-    setNoteList([...noteList, {id: new Date().getTime(), ...formData}])
-    setFormData({title: '', description: ''})
-  }
-
-  function onEdit(){
-    if (showItem !== null) {
-      setNoteList(noteList.map((
-        item
-      ) => (item.id === showItem) ? {
-        ...item,
-        title: formData.title,
-        desc: formData.description
-      } : item));
-      setViewMode(ViewMode.Show);
-    }
-  }
-
-  function onCancel(){
-    setViewMode(ViewMode.Empty)
-    setShowItem(null)
-  }
-
-  function getFormTitle():string {
-    switch (viewMode){
-      case ViewMode.Create:
-        return 'Create new note'
-      case ViewMode.Edit:
-        return 'Edit note'
-      default:
-        return ''
-    }
-  }
-
   return (
     <>
-      <h3 className={'mb-3'}>
-        {getFormTitle()}
-      </h3>
+      <h3 className={'mb-3'}>{formTitle}</h3>
 
       <Form>
         <Form.Group className="mb-3">
@@ -118,9 +76,9 @@ export function NoteForm({
           </Form.Text>
         </Form.Group>
 
-        {(viewMode === ViewMode.Create && <Button disabled={!isFormDataValid} onClick={onCreate}>Create</Button>)}
+        {(viewMode === ViewMode.Create && <Button disabled={!isFormDataValid} onClick={() => onCreate(formData)}>Create</Button>)}
 
-        {(viewMode === ViewMode.Edit && <Button disabled={!isFormDataValid} onClick={onEdit}>Save</Button>)}
+        {(viewMode === ViewMode.Edit && <Button disabled={!isFormDataValid} onClick={() => onEdit(formData)}>Save</Button>)}
 
         <Button
           variant={'outline-primary'}
@@ -131,5 +89,42 @@ export function NoteForm({
         </Button>
       </Form>
     </>
-  );
+  )
+}
+
+export const NoteForm: React.FC<Pick<NoteFormProp, "note">> = ({ note }) => {
+  const [state, actions] = useListState();
+  const currentNote = note ? note : { title: '', description: ''} as Note
+
+  const onCreate = (note: Note) => {
+    actions.addNote(note.title, note.description)
+  }
+
+  const onEdit = (note: Note) => {
+    actions.updateNote(note.id, note.title, note.description)
+  }
+
+  const onCancel = () => {
+    actions.changeViewMode(ViewMode.Empty)
+  }
+
+  const formTitle = useMemo(() => {
+    switch (state.viewMode){
+      case ViewMode.Create:
+        return 'Create new note'
+      case ViewMode.Edit:
+        return 'Edit note'
+      default:
+        return ''
+    }
+  }, [state.viewMode])
+
+  return <NoteFormView
+    viewMode={state.viewMode}
+    formTitle={formTitle}
+    note={currentNote}
+    onCreate={onCreate}
+    onEdit={onEdit}
+    onCancel={onCancel}
+  />
 }
