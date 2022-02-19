@@ -1,7 +1,6 @@
 import { createContext, FC, useContext, useEffect, useReducer, useState } from 'react'
-import { getNoteList, storeNoteList } from '../components/notes'
 import { addNote, changeViewMode, initialState, noteListReducer, removeNote, updateNote } from '../reducers'
-import { Dispatcher, NoteListState } from '../types'
+import { Dispatcher, Note, NoteListState } from '../types'
 
 export const NoteListContext = createContext<[NoteListState, Dispatcher]>([initialState, () => undefined]);
 
@@ -23,4 +22,13 @@ export const useListState = () => {
   }))
 
   return [state, actions] as const;
+}
+
+export function getNoteList():Note[] {
+  const data = localStorage.getItem("noteList");
+  return data ? JSON.parse(data) : [];
+}
+
+export function storeNoteList(noteList:Note[]):void {
+  localStorage.setItem("noteList", JSON.stringify(noteList));
 }

@@ -1,6 +1,5 @@
 import { Col, Container, Row } from 'react-bootstrap'
 import { NoteListProvider } from '../../contexts'
-import { Note } from '../../types'
 import { NoteList } from '../note-list'
 import { NoteSingle } from '../note-single'
 
@@ -26,13 +25,4 @@ export const Notes = () => {
       <NotesView/>
     </NoteListProvider>
   )
-}
-
-export function getNoteList():Note[] {
-  const data = localStorage.getItem("noteList");
-  return data ? JSON.parse(data) : [];
-}
-
-export function storeNoteList(noteList:Note[]):void {
-  localStorage.setItem("noteList", JSON.stringify(noteList));
 }
