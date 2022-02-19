@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Button, FormControl } from 'react-bootstrap'
-import { useListState } from '../../contexts'
+import { useListState, useViewModeState } from '../../contexts'
 import { Note, ViewMode } from '../../types'
 import { NoteListItem } from '../note-list-item'
 
@@ -38,7 +38,8 @@ export const NoteListView: React.FC<NoteListProp> = React.memo(({notes, onChange
 })
 
 export const NoteList: React.FC = () => {
-  const [state, actions] = useListState();
+  const [state] = useListState();
+  const [_, viewModeActions] = useViewModeState();
   const [notes, setNotes] = useState(state.notes);
 
   useEffect(() => {
@@ -54,10 +55,10 @@ export const NoteList: React.FC = () => {
         }
       )
     )
-  }, [])
+  }, [notes])
 
   return <NoteListView
-    onChangeViewMode={actions.changeViewMode}
+    onChangeViewMode={viewModeActions.changeViewMode}
     notes={notes}
     onFilter={onFilter}
   />

@@ -1,16 +1,29 @@
 import React, { useEffect } from 'react';
+import { Button } from 'react-bootstrap'
 import sanitizeHtml from 'sanitize-html';
+import { useViewModeState } from '../../contexts'
 import { sanitizeConfig } from '../../helpers'
-import { Note } from '../../types'
+import { Note, ViewMode } from '../../types'
+import { DefaultListItemProps } from '../note-list-item'
 import styles from './note-show.module.css'
 
 export type NoteShowProp = {
   readonly note: Note
+  readonly onBack: () => void
 }
 
-export const NoteShowView: React.FC<NoteShowProp> = ({ note }) => {
+export const NoteShowView: React.FC<NoteShowProp> = ({ note, onBack }) => {
   return (
     <>
+      <div className={'mb-3'}>
+        <Button
+          variant={'outline-primary'}
+          onClick={onBack}
+        >
+          Back
+        </Button>
+      </div>
+
       <h2 className={'mb-4'}>{note.title}</h2>
 
       <div
@@ -24,7 +37,8 @@ export const NoteShowView: React.FC<NoteShowProp> = ({ note }) => {
 }
 
 
-export const NoteShow = ({ note }: NoteShowProp) => {
+export const NoteShow: React.FC<Pick<DefaultListItemProps, "note">> = ({ note }) => {
+  const [_, actions] = useViewModeState();
   useEffect(() => {
     const links:NodeListOf<HTMLAnchorElement> = (document.querySelectorAll('a'));
 
@@ -51,5 +65,8 @@ export const NoteShow = ({ note }: NoteShowProp) => {
     }
   }, [note])
 
-  return <NoteShowView note={note} />
+  return <NoteShowView
+    note={note}
+    onBack={() => actions.changeViewMode(ViewMode.NoteList)}
+  />
 }

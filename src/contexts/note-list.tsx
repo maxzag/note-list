@@ -1,11 +1,11 @@
 import { createContext, FC, useContext, useEffect, useReducer, useState } from 'react'
-import { addNote, changeViewMode, initialState, noteListReducer, removeNote, updateNote } from '../reducers'
-import { Dispatcher, Note, NoteListState } from '../types'
+import { addNote, noteListInitialState, noteListReducer, removeNote, setShowNoteId, updateNote } from '../reducers'
+import { NoteListDispatcher, Note, NoteListState } from '../types'
 
-export const NoteListContext = createContext<[NoteListState, Dispatcher]>([initialState, () => undefined]);
+export const NoteListContext = createContext<[NoteListState, NoteListDispatcher]>([noteListInitialState, () => undefined]);
 
 export const NoteListProvider: FC = ({ children }) => {
-  const [state, dispatch] = useReducer(noteListReducer, initialState, (state) => ({ ...state, notes: getNoteList() }))
+  const [state, dispatch] = useReducer(noteListReducer, noteListInitialState, (state) => ({ ...state, notes: getNoteList() }))
 
   useEffect(() => storeNoteList([...state.notes]), [state.notes])
 
@@ -18,7 +18,7 @@ export const useListState = () => {
     addNote: addNote(dispatch),
     removeNote: removeNote(dispatch),
     updateNote: updateNote(dispatch),
-    changeViewMode: changeViewMode(dispatch)
+    setShowNoteId: setShowNoteId(dispatch)
   }))
 
   return [state, actions] as const;

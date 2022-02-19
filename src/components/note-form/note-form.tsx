@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Button, Form } from 'react-bootstrap'
 import ContentEditable from 'react-contenteditable'
 import { MAX_NOTE_DESCRIPTION_LENGTH, MAX_NOTE_TITLE_LENGTH } from '../../constants'
-import { useListState } from '../../contexts'
+import { useListState, useViewModeState } from '../../contexts'
 import { isDescriptionValid, isTitleValid, removeHTMLTags } from '../../helpers'
 import { Note, ViewMode } from '../../types'
 import styles from './note-form.module.css'
@@ -35,7 +35,7 @@ export const NoteFormView: React.FC<NoteFormProp> = ({
       && isNoteTitleValid
       && removeHTMLTags(formData.description).length !== 0
       && isNoteDescriptionValid
-  }, [formData])
+  }, [formData, isNoteDescriptionValid, isNoteTitleValid])
 
   return (
     <>
@@ -93,19 +93,22 @@ export const NoteFormView: React.FC<NoteFormProp> = ({
 }
 
 export const NoteForm: React.FC<Pick<NoteFormProp, "note">> = ({ note }) => {
-  const [state, actions] = useListState();
+  const [_, actions] = useListState();
+  const [state, viewModeActions] = useViewModeState();
   const currentNote = note ? note : { title: '', description: ''} as Note
 
   const onCreate = (note: Note) => {
     actions.addNote(note.title, note.description)
+    viewModeActions.changeViewMode(ViewMode.NoteList)
   }
 
   const onEdit = (note: Note) => {
     actions.updateNote(note.id, note.title, note.description)
+    viewModeActions.changeViewMode(ViewMode.NoteList)
   }
 
   const onCancel = () => {
-    actions.changeViewMode(ViewMode.Empty)
+    viewModeActions.changeViewMode(ViewMode.NoteList)
   }
 
   const formTitle = useMemo(() => {

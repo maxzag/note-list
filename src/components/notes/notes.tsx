@@ -1,18 +1,37 @@
+import React, { FC, useMemo } from 'react'
 import { Col, Container, Row } from 'react-bootstrap'
-import { NoteListProvider } from '../../contexts'
+import { useListState, useViewModeState } from '../../contexts'
+import { Note, NoteListState, ViewMode } from '../../types'
+import { NoteForm } from '../note-form'
 import { NoteList } from '../note-list'
-import { NoteSingle } from '../note-single'
+import { NoteShow } from '../note-show'
 
-export const NotesView = () => {
+export type NotesProp = {
+  readonly currentNote: Note
+  readonly viewMode: ViewMode
+} & Omit<NoteListState, "showNoteId">
+
+export const NotesView: FC<NotesProp> = ({
+  viewMode,
+  currentNote
+}) => {
   return (
     <Container className={'py-4'}>
-      <Row className={'justify-content-between'}>
-        <Col md={5}>
-          <NoteSingle/>
-        </Col>
+      <Row className={'justify-content-center'}>
+        <Col md={6}>
+          {(viewMode === ViewMode.NoteList) &&
+            <NoteList/>
+          }
 
-        <Col md={5}>
-          <NoteList/>
+          {(viewMode === ViewMode.Create || viewMode === ViewMode.Edit) &&
+            <NoteForm note={currentNote} />
+          }
+
+          {(viewMode === ViewMode.Show && currentNote) &&
+            <NoteShow
+              note={currentNote}
+            />
+          }
         </Col>
       </Row>
     </Container>
@@ -20,9 +39,15 @@ export const NotesView = () => {
 };
 
 export const Notes = () => {
+  const [state] = useListState();
+  const [viewModeState] = useViewModeState();
+  const currentNote = useMemo(() => state.notes.filter(item => item.id === state.showNoteId)[0], [state.showNoteId, state.notes])
+
   return (
-    <NoteListProvider>
-      <NotesView/>
-    </NoteListProvider>
+    <NotesView
+      viewMode={viewModeState.viewMode}
+      notes={state.notes}
+      currentNote={currentNote}
+    />
   )
 }

@@ -1,9 +1,8 @@
-import { Dispatcher, Note, NoteListEvent, NoteListEventType, NoteListState, ViewMode } from '../types'
+import { NoteListDispatcher, Note, NoteListEvent, NoteListEventType, NoteListState } from '../types'
 
-export const initialState: NoteListState = {
+export const noteListInitialState: NoteListState = {
   notes: [] as Note[],
   showNoteId: undefined,
-  viewMode: ViewMode.Empty
 };
 
 export const noteListReducer = (
@@ -11,14 +10,6 @@ export const noteListReducer = (
   event: NoteListEvent
 ): NoteListState => {
   switch (event.type) {
-    case NoteListEventType.ChangeViewMode: {
-      return {
-        ...state,
-        viewMode: event.viewMode,
-        showNoteId: event.noteId
-      }
-    }
-
     case NoteListEventType.AddNote: {
       return {
         ...state,
@@ -29,8 +20,7 @@ export const noteListReducer = (
             title: event.title,
             description: event.description
           }
-        ],
-        viewMode: ViewMode.Empty
+        ]
       };
     }
 
@@ -39,7 +29,6 @@ export const noteListReducer = (
         ...state,
         notes: state.notes.filter((note) => note.id !== event.noteId),
         showNoteId: event.noteId === state.showNoteId ? undefined : state.showNoteId,
-        viewMode: event.noteId === state.showNoteId ? ViewMode.Empty : state.viewMode,
       };
     }
 
@@ -51,34 +40,33 @@ export const noteListReducer = (
           note.id === event.noteId
             ? { ...note, title: event.title, description: event.description }
             : note
-        ),
-        viewMode: ViewMode.Empty
+        )
       };
+    }
+
+    case NoteListEventType.SetShowNoteId: {
+      return {
+        ...state,
+        showNoteId: event.noteId
+      }
     }
   }
 };
 
-export const changeViewMode = (dispatch: Dispatcher) => (viewMode: ViewMode, noteId?: number): void =>
-  dispatch({
-    type: NoteListEventType.ChangeViewMode,
-    noteId,
-    viewMode
-  });
-
-export const addNote = (dispatch: Dispatcher) => (title: string, description: string): void =>
+export const addNote = (dispatch: NoteListDispatcher) => (title: string, description: string): void =>
   dispatch({
     type: NoteListEventType.AddNote,
     title,
     description
   });
 
-export const removeNote = (dispatch: Dispatcher) => (noteId: number): void =>
+export const removeNote = (dispatch: NoteListDispatcher) => (noteId: number): void =>
   dispatch({
     type: NoteListEventType.RemoveNote,
     noteId
   });
 
-export const updateNote = (dispatch: Dispatcher) => (
+export const updateNote = (dispatch: NoteListDispatcher) => (
   noteId: number,
   title: string,
   description: string
@@ -88,4 +76,12 @@ export const updateNote = (dispatch: Dispatcher) => (
     noteId,
     title,
     description
+  });
+
+export const setShowNoteId = (dispatch: NoteListDispatcher) => (
+  noteId: number
+): void =>
+  dispatch({
+    type: NoteListEventType.SetShowNoteId,
+    noteId
   });
