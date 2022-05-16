@@ -1,14 +1,14 @@
 import React from 'react';
 import { Button, Card } from 'react-bootstrap'
 import sanitizeHtml from 'sanitize-html'
-import { useListState } from '../../contexts'
+import { useListState, useViewModeState } from '../../contexts'
 import { Note, ViewMode } from '../../types'
 
 export type DefaultListItemProps = {
   readonly note: Note
   readonly isOpen: boolean
-  readonly onDelete: (id:number) => void
-  readonly onChangeViewMode: (id:number, viewMode: ViewMode) => void
+  readonly onDelete: (id: number) => void
+  readonly onChangeViewMode: (id: number, viewMode: ViewMode) => void
 }
 
 export const NoteListItemView: React.FC<DefaultListItemProps> = ({
@@ -65,12 +65,18 @@ export const NoteListItemView: React.FC<DefaultListItemProps> = ({
 
 export const NoteListItem: React.FC<Pick<DefaultListItemProps, "note">> = ({ note }) => {
   const [state, actions] = useListState()
+  const [_, viewModeActions] = useViewModeState()
   const isOpen = state.showNoteId === note.id
+
+  const onChangeViewMode = (viewMode: ViewMode, id: number,) => {
+    actions.setShowNoteId(id)
+    viewModeActions.changeViewMode(viewMode)
+  }
 
   return <NoteListItemView
     note={note}
     isOpen={isOpen}
     onDelete={actions.removeNote}
-    onChangeViewMode={actions.changeViewMode}
+    onChangeViewMode={onChangeViewMode}
   />
 }

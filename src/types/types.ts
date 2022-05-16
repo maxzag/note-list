@@ -1,9 +1,27 @@
 export enum ViewMode {
-  Empty,
+  NoteList,
   Create,
   Edit,
   Show
 }
+
+export enum ViewModeEventType {
+  ChangeViewMode = "ChangeViewMode",
+}
+
+export type ViewModeEvent =
+  | ChangeViewModeEvent
+
+export type ViewModeState = {
+  readonly viewMode: ViewMode
+}
+
+export type ViewModeDispatcher = (event: ViewModeEvent) => void;
+
+export type ChangeViewModeEvent = {
+  readonly type: ViewModeEventType.ChangeViewMode
+  readonly viewMode: ViewMode
+};
 
 export type Note = {
   readonly id: number,
@@ -12,10 +30,10 @@ export type Note = {
 };
 
 export enum NoteListEventType {
-  ChangeViewMode = "ChangeViewMode",
   AddNote = "AddNote",
   RemoveNote = "RemoveNote",
-  UpdateNote = "UpdateNote"
+  UpdateNote = "UpdateNote",
+  SetShowNoteId = "SetShowNoteId"
 }
 
 export type AddNoteEvent = {
@@ -29,12 +47,6 @@ export type RemoveNoteEvent = {
   readonly noteId: number;
 };
 
-export type ChangeViewModeEvent = {
-  readonly type: NoteListEventType.ChangeViewMode
-  readonly noteId?: number
-  readonly viewMode: ViewMode
-};
-
 export type UpdateNoteEvent = {
   readonly type: NoteListEventType.UpdateNote;
   readonly noteId: number;
@@ -42,16 +54,20 @@ export type UpdateNoteEvent = {
   readonly description: string;
 };
 
+export type SetShowNoteIdEvent = {
+  readonly type: NoteListEventType.SetShowNoteId;
+  readonly noteId: number,
+}
+
 export type NoteListEvent =
-  | ChangeViewModeEvent
   | AddNoteEvent
   | RemoveNoteEvent
-  | UpdateNoteEvent;
+  | UpdateNoteEvent
+  | SetShowNoteIdEvent;
 
 export type NoteListState = {
   readonly notes: readonly Note[],
   readonly showNoteId: number | undefined,
-  readonly viewMode: ViewMode
 };
 
-export type Dispatcher = (event: NoteListEvent) => void;
+export type NoteListDispatcher = (event: NoteListEvent) => void;
