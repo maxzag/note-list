@@ -8,15 +8,16 @@ export type NoteListProp = {
   readonly notes: readonly Note[]
   readonly onChangeViewMode: (viewMode: ViewMode) => void
   readonly onFilter: (query: string) => void
+  readonly isAuth: boolean
 }
 
-export const NoteListView: React.FC<NoteListProp> = React.memo(({notes, onChangeViewMode, onFilter}) => {
+export const NoteListView: React.FC<NoteListProp> = React.memo(({notes, onChangeViewMode, onFilter, isAuth}) => {
   return (
     <>
       <div className={'d-flex justify-content-between mb-3'}>
         <h3 className={'mb-0'}>Note list</h3>
 
-        <Button onClick={() => onChangeViewMode(ViewMode.Create)}>Create note</Button>
+        {isAuth && <Button onClick={() => onChangeViewMode(ViewMode.Create)}>Create note</Button>}
       </div>
 
       <div className={'mb-3'}>
@@ -31,13 +32,14 @@ export const NoteListView: React.FC<NoteListProp> = React.memo(({notes, onChange
         <NoteListItem
           key={note.id}
           note={note}
+          isAuth={isAuth}
         />
       ))).reverse()}
     </>
   );
 })
 
-export const NoteList: React.FC = () => {
+export const NoteList: React.FC<Pick<NoteListProp, "isAuth">> = ({isAuth}) => {
   const [state] = useListState();
   const [_, viewModeActions] = useViewModeState();
   const [notes, setNotes] = useState(state.notes);
@@ -61,5 +63,6 @@ export const NoteList: React.FC = () => {
     onChangeViewMode={viewModeActions.changeViewMode}
     notes={notes}
     onFilter={onFilter}
+    isAuth={isAuth}
   />
 }

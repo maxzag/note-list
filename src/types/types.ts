@@ -2,7 +2,8 @@ export enum ViewMode {
   NoteList,
   Create,
   Edit,
-  Show
+  Show,
+  Auth
 }
 
 export enum ViewModeEventType {
@@ -71,3 +72,44 @@ export type NoteListState = {
 };
 
 export type NoteListDispatcher = (event: NoteListEvent) => void;
+
+export type User = {
+  login: string,
+  password: string
+}
+
+export enum AuthEventType {
+  Login = "Login",
+  LoginError = "LoginError",
+  Logout = "Logout",
+}
+
+export type LoginEvent = {
+  readonly type: AuthEventType.Login
+  readonly login: string
+  readonly password: string
+  readonly isError: boolean
+}
+
+export type LogoutEvent = {
+  readonly type: AuthEventType.Logout
+}
+
+export type LoginErrorEvent = {
+  readonly type: AuthEventType.LoginError
+  readonly isError: boolean
+}
+
+export type AuthEvent =
+  | LoginEvent
+  | LoginErrorEvent
+  | LogoutEvent
+
+export type AuthState = {
+  readonly login?: string
+  readonly password?: string
+  readonly isAuth: boolean
+  readonly isError: boolean
+};
+
+export type AuthDispatcher = (event: AuthEvent) => void;
