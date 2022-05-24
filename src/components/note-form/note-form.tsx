@@ -1,45 +1,37 @@
-import React, { useMemo, useState } from 'react';
+import { FC, useContext } from 'react';
 import { Button, Form } from 'react-bootstrap'
 import ContentEditable from 'react-contenteditable'
 import { MAX_NOTE_DESCRIPTION_LENGTH, MAX_NOTE_TITLE_LENGTH } from '../../constants'
 import { useListState, useViewModeState } from '../../contexts'
-import { isDescriptionValid, isTitleValid, removeHTMLTags } from '../../helpers'
+import { useNoteFormState } from '../../contexts/note-form'
+import { NoteServiceContext } from '../../contexts/note-service'
 import { Note, ViewMode } from '../../types'
 import styles from './note-form.module.css'
 
 export type NoteFormProp = {
-  readonly viewMode: ViewMode
-  readonly formTitle: string
-  readonly note: Note
-  readonly onCreate: (note: Note) => void
-  readonly onEdit: (note: Note) => void
+  readonly formData: Note
+  readonly isTitleValid: boolean
+  readonly isDescriptionValid: boolean
+  readonly isFormValid: boolean
+  readonly onChangeTitle: (title: string) => void
+  readonly onChangeDescription: (description: string) => void
   readonly onCancel: () => void
+  readonly onSubmit: () => void
 }
 
-export const NoteFormView: React.FC<NoteFormProp> = ({
-  viewMode,
-  formTitle,
-  note,
-  onCreate,
-  onEdit,
-  onCancel
+export const NoteFormView: FC<NoteFormProp> = ({
+  formData,
+  isTitleValid,
+  isDescriptionValid,
+  isFormValid,
+  onChangeTitle,
+  onChangeDescription,
+  onCancel,
+  onSubmit
 }) => {
-  const [formData, setFormData] = useState(note);
-
-  const isNoteTitleValid = useMemo(() => isTitleValid(formData.title), [formData.title]);
-  const isNoteDescriptionValid = useMemo(() => isDescriptionValid(formData.description), [formData.description]);
-  const noteTitleCharDifference = useMemo(() => MAX_NOTE_TITLE_LENGTH - formData.title.length, [formData.title]);
-  const noteDescriptionCharDifference = useMemo(() => MAX_NOTE_DESCRIPTION_LENGTH - formData.description.length, [formData.description]);
-  const isFormDataValid = useMemo(() => {
-    return removeHTMLTags(formData.title).length !== 0
-      && isNoteTitleValid
-      && removeHTMLTags(formData.description).length !== 0
-      && isNoteDescriptionValid
-  }, [formData, isNoteDescriptionValid, isNoteTitleValid])
-
   return (
     <>
-      <h3 className={'mb-3'}>{formTitle}</h3>
+      <h3 className={'mb-3'}>{formData.id === -1 ? 'Create new note' : 'Edit note'}</h3>
 
       <Form>
         <Form.Group className="mb-3">
@@ -48,13 +40,10 @@ export const NoteFormView: React.FC<NoteFormProp> = ({
             type="text"
             placeholder="Enter note title"
             value={formData.title}
-            onChange={(e) => setFormData({
-              ...formData,
-              title: e.target.value
-            })}
+            onChange={(e) => onChangeTitle(e.target.value)}
           />
           <Form.Text className={'text-danger'}>
-            {!isNoteTitleValid && `Field length: ${noteTitleCharDifference}`}
+            {!isTitleValid && `Field length: ${MAX_NOTE_TITLE_LENGTH - formData.title.length}`}
           </Form.Text>
         </Form.Group>
 
@@ -63,22 +52,17 @@ export const NoteFormView: React.FC<NoteFormProp> = ({
           <ContentEditable
             className={`form-control ${styles.content}`}
             html={formData.description}
-            onChange={(e) => setFormData({
-              ...formData,
-              description: e.target.value
-            })}
+            onChange={(e) => onChangeDescription(e.target.value)}
             style={{
               minHeight: '150px'
             }}
           />
           <Form.Text className={'text-danger'}>
-            {!isNoteDescriptionValid && `Field length: ${noteDescriptionCharDifference}`}
+            {!isDescriptionValid && `Field length: ${MAX_NOTE_DESCRIPTION_LENGTH - formData.description.length}`}
           </Form.Text>
         </Form.Group>
 
-        {(viewMode === ViewMode.Create && <Button disabled={!isFormDataValid} onClick={() => onCreate(formData)}>Create</Button>)}
-
-        {(viewMode === ViewMode.Edit && <Button disabled={!isFormDataValid} onClick={() => onEdit(formData)}>Save</Button>)}
+        <Button disabled={!isFormValid} onClick={() => onSubmit()}>Submit</Button>
 
         <Button
           variant={'outline-primary'}
@@ -92,42 +76,31 @@ export const NoteFormView: React.FC<NoteFormProp> = ({
   )
 }
 
-export const NoteForm: React.FC<Pick<NoteFormProp, "note">> = ({ note }) => {
-  const [_, actions] = useListState();
-  const [state, viewModeActions] = useViewModeState();
-  const currentNote = note ? note : { title: '', description: ''} as Note
+export const NoteForm: FC = () => {
+  const [formState, formActions] = useNoteFormState();
 
-  const onCreate = (note: Note) => {
-    actions.addNote(note.title, note.description)
-    viewModeActions.changeViewMode(ViewMode.NoteList)
-  }
+  const { createNote, updateNote, formCancel } = useContext(NoteServiceContext);
 
-  const onEdit = (note: Note) => {
-    actions.updateNote(note.id, note.title, note.description)
-    viewModeActions.changeViewMode(ViewMode.NoteList)
-  }
+  const updateTitle = (title: string) => formActions.changeTitle(title)
 
-  const onCancel = () => {
-    viewModeActions.changeViewMode(ViewMode.NoteList)
-  }
+  const updateDescription = (description: string) => formActions.changeDescription(description)
 
-  const formTitle = useMemo(() => {
-    switch (state.viewMode){
-      case ViewMode.Create:
-        return 'Create new note'
-      case ViewMode.Edit:
-        return 'Edit note'
-      default:
-        return ''
+  const onSubmit = () => {
+    if (formState.note.id === -1) {
+      createNote(formState)
+    } else {
+      updateNote(formState)
     }
-  }, [state.viewMode])
+  }
 
   return <NoteFormView
-    viewMode={state.viewMode}
-    formTitle={formTitle}
-    note={currentNote}
-    onCreate={onCreate}
-    onEdit={onEdit}
-    onCancel={onCancel}
+    onChangeTitle={updateTitle}
+    onChangeDescription={updateDescription}
+    formData={formState.note}
+    isTitleValid={formState.isFormTitleValid}
+    isDescriptionValid={formState.isFormDescriptionValid}
+    isFormValid={formState.isFormValid}
+    onCancel={formCancel}
+    onSubmit={onSubmit}
   />
 }
