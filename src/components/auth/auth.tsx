@@ -57,7 +57,7 @@ export const AuthView: FC<AuthProp> = ({
 
 export const Auth = () => {
   const [formData, setFormData] = useState({login: '', password: ''} as User);
-  const [_, viewModeAction] = useViewModeState();
+  const [, viewModeAction] = useViewModeState();
   const [{isAuth, isError}, authActions] = useAuthState();
 
   const onChange = (user: User) => setFormData(() => user)

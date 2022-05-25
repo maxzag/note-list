@@ -57,9 +57,9 @@ export const NotesInnerContent: FC<Omit<NotesProp, "onLogin" | "onLogout">> = ({
     case ViewMode.Auth:
       return <Auth/>
     case ViewMode.Create:
-      return <NoteForm note={currentNote} />
+      return <NoteForm/>
     case ViewMode.Edit:
-      return <NoteForm note={currentNote} />
+      return <NoteForm/>
     case ViewMode.Show:
       return <NoteShow note={currentNote} />
     case ViewMode.NoteList:

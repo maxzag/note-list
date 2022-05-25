@@ -41,7 +41,7 @@ export const NoteListView: React.FC<NoteListProp> = React.memo(({notes, onChange
 
 export const NoteList: React.FC<Pick<NoteListProp, "isAuth">> = ({isAuth}) => {
   const [state] = useListState();
-  const [_, viewModeActions] = useViewModeState();
+  const [, viewModeActions] = useViewModeState();
   const [notes, setNotes] = useState(state.notes);
 
   useEffect(() => {

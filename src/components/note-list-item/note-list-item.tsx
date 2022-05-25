@@ -1,21 +1,24 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Button, Card } from 'react-bootstrap'
 import sanitizeHtml from 'sanitize-html'
-import { useListState, useViewModeState } from '../../contexts'
-import { Note, ViewMode } from '../../types'
+import { useListState } from '../../contexts'
+import { NoteServiceContext } from '../../contexts/note-service'
+import { Note } from '../../types'
 
 export type DefaultListItemProps = {
   readonly note: Note
   readonly isOpen: boolean
+  readonly onOpen: (id: number) => void
+  readonly onEdit: (note: Note) => void
   readonly onDelete: (id: number) => void
-  readonly onChangeViewMode: (id: number, viewMode: ViewMode) => void
   readonly isAuth: boolean
 }
 
 export const NoteListItemView: React.FC<DefaultListItemProps> = ({
   note,
   isOpen,
-  onChangeViewMode,
+  onOpen,
+  onEdit,
   onDelete,
   isAuth
 }) => {
@@ -40,14 +43,14 @@ export const NoteListItemView: React.FC<DefaultListItemProps> = ({
           }} />
 
         <div className={'d-flex justify-content-between'}>
-          <Button onClick={() => onChangeViewMode(ViewMode.Show, note.id)}>Open</Button>
+          <Button onClick={() => onOpen(note.id)}>Open</Button>
 
           {isAuth && (
             <div>
               <Button
                 variant={'outline-primary'}
                 className={'mx-3'}
-                onClick={() => onChangeViewMode(ViewMode.Edit, note.id)}
+                onClick={() => onEdit(note)}
               >
                 Edit
               </Button>
@@ -68,19 +71,15 @@ export const NoteListItemView: React.FC<DefaultListItemProps> = ({
 
 export const NoteListItem: React.FC<Pick<DefaultListItemProps, "note" | "isAuth">> = ({ note, isAuth }) => {
   const [state, actions] = useListState()
-  const [_, viewModeActions] = useViewModeState()
   const isOpen = state.showNoteId === note.id
-
-  const onChangeViewMode = (viewMode: ViewMode, id: number,) => {
-    actions.setShowNoteId(id)
-    viewModeActions.changeViewMode(viewMode)
-  }
+  const { editNote, openNote } = useContext(NoteServiceContext)
 
   return <NoteListItemView
     note={note}
     isOpen={isOpen}
     onDelete={actions.removeNote}
-    onChangeViewMode={onChangeViewMode}
+    onEdit={editNote}
+    onOpen={openNote}
     isAuth={isAuth}
   />
 }

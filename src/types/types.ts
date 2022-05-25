@@ -24,6 +24,10 @@ export type ChangeViewModeEvent = {
   readonly viewMode: ViewMode
 };
 
+export type ViewModeActions = {
+  readonly changeViewMode: (viewMode: ViewMode) => void
+}
+
 export type Note = {
   readonly id: number,
   readonly title: string;
@@ -73,6 +77,13 @@ export type NoteListState = {
 
 export type NoteListDispatcher = (event: NoteListEvent) => void;
 
+export type NoteListActions = {
+  readonly addNote: (title: string, description: string) => void,
+  readonly removeNote: (noteId: number) => void,
+  readonly updateNote: (noteId: number, title: string, description: string) => void,
+  readonly setShowNoteId: (noteId: number) => void
+}
+
 export type User = {
   login: string,
   password: string
@@ -113,3 +124,59 @@ export type AuthState = {
 };
 
 export type AuthDispatcher = (event: AuthEvent) => void;
+
+export enum NoteFormEventType {
+  SetupForm = "SetupForm",
+  ChangeTitle = "ChangeTitle",
+  ChangeDescription = "ChangeContent",
+  ResetForm = "ResetForm"
+}
+
+export type SetupFormEvent = {
+  readonly type: NoteFormEventType.SetupForm
+  readonly note: Note
+}
+
+export type ChangeTitleEvent = {
+  readonly type: NoteFormEventType.ChangeTitle
+  readonly title: string
+}
+
+export type ChangeDescriptionEvent = {
+  readonly type: NoteFormEventType.ChangeDescription
+  readonly description: string
+}
+
+export type ResetFormEvent = {
+  readonly type: NoteFormEventType.ResetForm
+}
+
+export type NoteFormEvent =
+  | SetupFormEvent
+  | ChangeTitleEvent
+  | ChangeDescriptionEvent
+  | ResetFormEvent
+
+export type NoteFormState = {
+  readonly note: Note
+  readonly isFormTitleValid: boolean,
+  readonly isFormDescriptionValid: boolean
+  readonly isFormValid: boolean
+}
+
+export type NoteFormDispatcher = (event: NoteFormEvent) => void;
+
+export type NoteFormActions = {
+  readonly setupForm: (note: Note) => void,
+  readonly changeTitle: (title: string) => void,
+  readonly changeDescription: (description: string) => void,
+  readonly resetForm: () => void
+}
+
+export type CreateNoteService = {
+  readonly createNote: (payload: NoteFormState) => void
+  readonly updateNote: (payload: NoteFormState) => void
+  readonly formCancel: () => void
+  readonly editNote: (note: Note) => void
+  readonly openNote: (id: number) => void
+}
