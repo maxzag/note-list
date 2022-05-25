@@ -8,9 +8,9 @@ import { useViewModeState } from './view-mode'
 export const NoteServiceContext = createContext({} as CreateNoteService)
 
 export const NoteServiceProvider: FC = ({ children }) => {
-  const [_, viewModeActions] = useViewModeState();
-  const [__, noteFormActions] = useNoteFormState();
-  const [___, noteListActions] = useListState();
+  const [, viewModeActions] = useViewModeState();
+  const [, noteFormActions] = useNoteFormState();
+  const [, noteListActions] = useListState();
 
   const actions = createNoteService(viewModeActions, noteFormActions, noteListActions);
 

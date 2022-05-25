@@ -38,7 +38,7 @@ export const NoteShowView: React.FC<NoteShowProp> = ({ note, onBack }) => {
 
 
 export const NoteShow: React.FC<Pick<DefaultListItemProps, "note">> = ({ note }) => {
-  const [_, actions] = useViewModeState();
+  const [, actions] = useViewModeState();
   useEffect(() => {
     const links:NodeListOf<HTMLAnchorElement> = (document.querySelectorAll('a'));
 

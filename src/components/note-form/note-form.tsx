@@ -2,10 +2,9 @@ import { FC, useContext } from 'react';
 import { Button, Form } from 'react-bootstrap'
 import ContentEditable from 'react-contenteditable'
 import { MAX_NOTE_DESCRIPTION_LENGTH, MAX_NOTE_TITLE_LENGTH } from '../../constants'
-import { useListState, useViewModeState } from '../../contexts'
 import { useNoteFormState } from '../../contexts/note-form'
 import { NoteServiceContext } from '../../contexts/note-service'
-import { Note, ViewMode } from '../../types'
+import { Note } from '../../types'
 import styles from './note-form.module.css'
 
 export type NoteFormProp = {
@@ -29,9 +28,11 @@ export const NoteFormView: FC<NoteFormProp> = ({
   onCancel,
   onSubmit
 }) => {
+  const formTitle = formData.id === -1 ? 'Create new note' : 'Edit note';
+
   return (
     <>
-      <h3 className={'mb-3'}>{formData.id === -1 ? 'Create new note' : 'Edit note'}</h3>
+      <h3 className={'mb-3'}>{formTitle}</h3>
 
       <Form>
         <Form.Group className="mb-3">
