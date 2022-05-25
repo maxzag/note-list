@@ -9,14 +9,15 @@ export type DefaultListItemProps = {
   readonly isOpen: boolean
   readonly onDelete: (id: number) => void
   readonly onChangeViewMode: (id: number, viewMode: ViewMode) => void
+  readonly isAuth: boolean
 }
 
 export const NoteListItemView: React.FC<DefaultListItemProps> = ({
   note,
   isOpen,
   onChangeViewMode,
-  onDelete
-
+  onDelete,
+  isAuth
 }) => {
   const NowrapText:React.CSSProperties = {
     whiteSpace: 'nowrap',
@@ -41,29 +42,31 @@ export const NoteListItemView: React.FC<DefaultListItemProps> = ({
         <div className={'d-flex justify-content-between'}>
           <Button onClick={() => onChangeViewMode(ViewMode.Show, note.id)}>Open</Button>
 
-          <div>
-            <Button
-              variant={'outline-primary'}
-              className={'mx-3'}
-              onClick={() => onChangeViewMode(ViewMode.Edit, note.id)}
-            >
-              Edit
-            </Button>
+          {isAuth && (
+            <div>
+              <Button
+                variant={'outline-primary'}
+                className={'mx-3'}
+                onClick={() => onChangeViewMode(ViewMode.Edit, note.id)}
+              >
+                Edit
+              </Button>
 
-            <Button
-              variant={'danger'}
-              onClick={() => onDelete(note.id)}
-            >
-              Delete
-            </Button>
-          </div>
+              <Button
+                variant={'danger'}
+                onClick={() => onDelete(note.id)}
+              >
+                Delete
+              </Button>
+            </div>
+          )}
         </div>
       </Card.Body>
     </Card>
   )
 }
 
-export const NoteListItem: React.FC<Pick<DefaultListItemProps, "note">> = ({ note }) => {
+export const NoteListItem: React.FC<Pick<DefaultListItemProps, "note" | "isAuth">> = ({ note, isAuth }) => {
   const [state, actions] = useListState()
   const [_, viewModeActions] = useViewModeState()
   const isOpen = state.showNoteId === note.id
@@ -78,5 +81,6 @@ export const NoteListItem: React.FC<Pick<DefaultListItemProps, "note">> = ({ not
     isOpen={isOpen}
     onDelete={actions.removeNote}
     onChangeViewMode={onChangeViewMode}
+    isAuth={isAuth}
   />
 }
